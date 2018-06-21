@@ -148,6 +148,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   --start START         initial batch date to process in YYYY-MM-DD format
+  --cursor CURSOR       latest cursor representing the starting point to request data to the streaming API
   -p PERSIST, --persist PERSIST
                         file to store persistent state data, to ensure only
                         alerts that haven't been seen before are part of the

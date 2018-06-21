@@ -8,13 +8,14 @@ import os
 import sys
 
 import six
+from uuid import UUID
 from requests import request
 from six.moves.configparser import RawConfigParser
 from six.moves.urllib.parse import urlsplit, quote_plus
 
 from magnetsdk2.time import UTC
 from magnetsdk2.validation import is_valid_uuid, is_valid_uri, is_valid_port, \
-    is_valid_alert_sortBy, is_valid_alert_status, parse_date
+     is_valid_alert_sortBy, is_valid_alert_status, parse_date
 
 # Default values used for the configuration
 _CONFIG_DIR = os.path.expanduser('~/.magnetsdk')
@@ -22,7 +23,6 @@ _CONFIG_FILE = os.path.join(_CONFIG_DIR, "config")
 _DEFAULT_CONFIG = {'endpoint': 'https://api.niddel.com/v2'}
 _API_KEY_HEADER = 'X-Api-Key'
 _PAGE_SIZE = 100
-
 
 class Connection(object):
     """ This class encapsulates accessing the Niddel Magnet v2 API (https://api.niddel.com/v2)
@@ -311,6 +311,58 @@ class Connection(object):
             else:
                 response.raise_for_status()
             params['page'] += 1
+
+
+    def iter_organization_alerts_stream(self, organization_id, latest_api_cursor=None, 
+                                        latest_batch_date=None, persistence=None):
+        """ Generator that allows iteration over an organization's alerts, with optional filters.
+        :param organization_id: string with the UUID-style unique ID of the organization
+        :param latest_api_cursor: string with API cursor representing the latest alert ID retrived
+        :param latest_batch_date: string with YYYY-MM-DD format representing the latest alert batch date retrived
+        :param persistence: boolean indicating if the alerts will be persisted. If so, the API cursor should be returned
+        :return: an iterator over the decoded JSON objects that represent alerts.
+        """
+
+        if not is_valid_uuid(organization_id):
+            raise ValueError("organization id should be a string in UUID format")
+    
+        # loop over alert pages and yield them
+        params = {}
+
+        if latest_api_cursor:
+            params['cursor'] = latest_api_cursor
+
+        elif latest_batch_date:
+            params['batchDate'] = parse_date(latest_batch_date)
+
+        while True:
+            response = self._request_retry("GET", 
+                                        path='organizations/%s/alerts/stream' % organization_id,
+                                        params=params)
+            
+            if response.status_code == 200:
+                alert_response = response.json()
+
+                if not alert_response.has_key('paging'):
+                    return
+
+                if not alert_response['paging'].has_key('cursor'):
+                    return
+                
+                params['cursor'] = alert_response['paging']['cursor']
+
+                if params.has_key('batchDate'):
+                    del params['batchDate']
+
+                for alert in alert_response['data']:
+                    if persistence:
+                        yield {'cursor': params['cursor'], 'alert':alert}
+                    else:
+                        yield alert
+                return
+            else:
+                response.raise_for_status()
+
 
     def list_organization_alert_dates(self, organization_id, sortBy="logDate"):
         """ Lists all log or batch dates for which alerts exist on the organization.

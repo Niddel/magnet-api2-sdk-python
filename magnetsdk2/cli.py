@@ -75,10 +75,13 @@ def main():
                                     "default organization is used",
                                nargs='?', type=UUID)
     alerts_parser.add_argument("--start", help="initial batch date to process in YYYY-MM-DD format",
-                               type=parse_arg_date)
+                                type=parse_arg_date)
     alerts_parser.add_argument("-p", "--persist",
                                help="file to store persistent state data, to ensure only alerts " +
                                     "that haven't been seen before are part of the output")
+    alerts_parser.add_argument("-c", "--cursor",
+                               help="latest cursor representing the starting point to request " +
+                                    "data to the streaming API")
     alerts_parser.add_argument("-f", "--format", choices=['json', 'cef'], default='json',
                                help="format in which to output alerts")
     alerts_parser.set_defaults(func=command_alerts, start=None, persist=None, parser=alerts_parser)
@@ -215,8 +218,7 @@ def command_alerts(conn, args):
                                                organization_id=args.organization,
                                                start_date=args.start)
     else:
-        iterator = conn.iter_organization_alerts(organization_id=args.organization,
-                                                 fromDate=args.start, sortBy='batchDate')
+        iterator = conn.iter_organization_alerts_stream(organization_id=args.organization)
 
     if args.outfile != stdout and args.format == 'cef':
         args.outfile.write(BOM_UTF8)
