@@ -80,7 +80,7 @@ def main():
                                help="file to store persistent state data, to ensure only alerts " +
                                     "that haven't been seen before are part of the output")
     alerts_parser.add_argument("-c", "--cursor",
-                               help="latest cursor representing the start point to request " +
+                               help="latest cursor representing the starting point to request " +
                                     "data to the streaming API")
     alerts_parser.add_argument("-f", "--format", choices=['json', 'cef'], default='json',
                                help="format in which to output alerts")
