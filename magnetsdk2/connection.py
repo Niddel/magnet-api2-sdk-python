@@ -319,6 +319,7 @@ class Connection(object):
         :param organization_id: string with the UUID-style unique ID of the organization
         :param latest_api_cursor: string with API cursor representing the latest alert ID retrived
         :param latest_batch_date: string with YYYY-MM-DD format representing the latest alert batch date retrived
+        :param persistence: boolean indicating if the alerts will be persisted. If so, the API cursor should be returned
         :return: an iterator over the decoded JSON objects that represent alerts.
         """
 
