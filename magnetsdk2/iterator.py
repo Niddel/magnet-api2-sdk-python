@@ -61,6 +61,8 @@ class PersistenceEntry(object):
             self._latest_alert_ids = set()
         else:
             if not isinstance(latest_alert_ids, list):
+                latest_alert_ids = {latest_alert_ids}
+            else:
                 latest_alert_ids = set(latest_alert_ids)
             if not isinstance(latest_alert_ids, Iterable):
                 raise ValueError('latest alert IDs must be iterable')
