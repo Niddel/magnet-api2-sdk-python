@@ -218,7 +218,8 @@ def command_alerts(conn, args):
                                                organization_id=args.organization,
                                                start_date=args.start)
     else:
-        iterator = conn.iter_organization_alerts_stream(organization_id=args.organization)
+        iterator = conn.iter_organization_alerts_stream(organization_id=args.organization, 
+                                                        latest_batch_date=args.start)
 
     if args.outfile != stdout and args.format == 'cef':
         args.outfile.write(BOM_UTF8)
