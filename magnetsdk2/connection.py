@@ -314,7 +314,7 @@ class Connection(object):
 
 
     def iter_organization_alerts_stream(self, organization_id, latest_api_cursor=None, 
-                                        latest_batch_date=None, persistence=None):
+                                        latest_batch_date=None, persistence=False):
         """ Generator that allows iteration over an organization's alerts, with optional filters.
         :param organization_id: string with the UUID-style unique ID of the organization
         :param latest_api_cursor: string with API cursor representing the latest alert ID retrived
@@ -358,6 +358,8 @@ class Connection(object):
                         yield {'cursor': params['cursor'], 'alert':alert}
                     else:
                         yield alert
+                if persistence:
+                    return
             else:
                 response.raise_for_status()
 

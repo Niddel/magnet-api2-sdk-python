@@ -58,22 +58,20 @@ class PersistenceEntry(object):
     @latest_alert_ids.setter
     def latest_alert_ids(self, latest_alert_ids):
         if latest_alert_ids is None:
-            self._latest_alert_ids = set()
+            self._latest_alert_ids = []
         else:
             if not isinstance(latest_alert_ids, list):
-                latest_alert_ids = {latest_alert_ids}
-            else:
-                latest_alert_ids = set(latest_alert_ids)
+                latest_alert_ids = [latest_alert_ids]
             if not isinstance(latest_alert_ids, Iterable):
                 raise ValueError('latest alert IDs must be iterable')
             if latest_alert_ids and not all(is_valid_uuid(x) for x in latest_alert_ids):
                 raise ValueError('latest alert IDs must only contain UUIDs')
-            self._latest_alert_ids = {x for x in latest_alert_ids}
+            self._latest_alert_ids = [x for x in latest_alert_ids]
 
     def add_alert_id(self, alert_id):
         if not is_valid_uuid(alert_id):
             raise ValueError("invalid alert ID")
-        self._latest_alert_ids.add(alert_id)
+        self._latest_alert_ids.append(alert_id)
 
     def __init__(self, organization_id, latest_batch_date=None, latest_alert_ids=None, latest_api_cursor=None):
         if not is_valid_uuid(organization_id):
@@ -81,7 +79,7 @@ class PersistenceEntry(object):
         self._organization_id = organization_id
         self._latest_batch_date = None
         self._latest_api_cursor = None
-        self._latest_alert_ids = set()
+        self._latest_alert_ids = []
         self.latest_batch_date = latest_batch_date
         self.latest_api_cursor = latest_api_cursor
         self.latest_alert_ids = latest_alert_ids
@@ -253,7 +251,7 @@ class FilePersistentAlertIterator(AbstractPersistentAlertIterator):
         pe = {
             'organization_id': str(self.persistence_entry.organization_id),
             'latest_api_cursor': self.persistence_entry.latest_api_cursor,
-            'latest_alert_ids': list(self.persistence_entry.latest_alert_ids)
+            'latest_alert_ids': self.persistence_entry.latest_alert_ids[-1]
         }
         with open(self._filename, 'w') as f:
             json.dump(pe, f)
@@ -261,3 +259,4 @@ class FilePersistentAlertIterator(AbstractPersistentAlertIterator):
     def __str__(self):
         return super(FilePersistentAlertIterator, self).__str__()[:-1] + ", filename=%s)" \
                                                                          % self._filename
+                                                                         
