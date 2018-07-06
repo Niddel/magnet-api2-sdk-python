@@ -259,3 +259,4 @@ class FilePersistentAlertIterator(AbstractPersistentAlertIterator):
     def __str__(self):
         return super(FilePersistentAlertIterator, self).__str__()[:-1] + ", filename=%s)" \
                                                                          % self._filename
+                                                                         

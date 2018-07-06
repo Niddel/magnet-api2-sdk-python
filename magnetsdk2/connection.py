@@ -314,7 +314,7 @@ class Connection(object):
 
 
     def iter_organization_alerts_stream(self, organization_id, latest_api_cursor=None, 
-                                        latest_batch_date=None, persistence=None):
+                                        latest_batch_date=None, persistence=False):
         """ Generator that allows iteration over an organization's alerts, with optional filters.
         :param organization_id: string with the UUID-style unique ID of the organization
         :param latest_api_cursor: string with API cursor representing the latest alert ID retrived
@@ -322,7 +322,6 @@ class Connection(object):
         :param persistence: boolean indicating if the alerts will be persisted. If so, the API cursor should be returned
         :return: an iterator over the decoded JSON objects that represent alerts.
         """
-
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
     
@@ -332,7 +331,7 @@ class Connection(object):
         if latest_api_cursor:
             params['cursor'] = latest_api_cursor
 
-        elif latest_batch_date:
+        elif latest_batch_date and not latest_api_cursor:
             params['batchDate'] = parse_date(latest_batch_date)
 
         while True:
@@ -359,7 +358,8 @@ class Connection(object):
                         yield {'cursor': params['cursor'], 'alert':alert}
                     else:
                         yield alert
-                return
+                if persistence:
+                    return
             else:
                 response.raise_for_status()
 
