@@ -13,6 +13,7 @@ from requests import request
 from six.moves.configparser import RawConfigParser
 from six.moves.urllib.parse import urlsplit, quote_plus
 
+from magnetsdk2 import __version__ as magnetsdk_version
 from magnetsdk2.time import UTC
 from magnetsdk2.validation import is_valid_uuid, is_valid_uri, is_valid_port, \
      is_valid_alert_sortBy, is_valid_alert_status, parse_date
@@ -30,7 +31,7 @@ class Connection(object):
      the requests library that is used for all accesses.
     """
 
-    def __init__(self, profile='default', api_key=None, endpoint=None):
+    def __init__(self, profile='default', api_key=None, endpoint=None, user_agent=None):
         """ Initializes the connection with the proper configuration data.
         :param profile: the profile name to use in ~/.magnetsdk/config
         :param api_key: if provided, this API key is used instead of the one on the
@@ -84,6 +85,13 @@ class Connection(object):
         self._logger.debug('%s: endpoint=%r, verify=%r', self.__class__.__name__, self.endpoint,
                            self.verify)
         self._proxies = None
+
+        # support passing user-agent as Splunk TA or App version
+        # so we can identify in backend the client version installed
+        if user_agent:
+            self.user_agent = "Magnet SDK Python/v%s; %s" % (magnetsdk_version, user_agent) 
+        else:
+            self.user_agent = "Magnet SDK Python/v%s" % magnetsdk_version
 
     def __del__(self):
         self.close()
@@ -165,7 +173,7 @@ class Connection(object):
                            proxies=self._proxies, timeout=(5, 60),
                            headers={_API_KEY_HEADER: self.api_key,
                                     "Accept-Encoding": "gzip, deflate",
-                                    "User-Agent": "magnet-sdk-python",
+                                    "User-Agent": self.user_agent,
                                     "Accept": "application/json"})
         if response.request.body:
             msg = '{0:s} {1:s} ({2:d} bytes in body)'.format(response.request.method,
