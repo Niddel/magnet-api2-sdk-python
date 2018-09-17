@@ -6,6 +6,9 @@ environment:
       - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
         PYTHON: "python3"
         PYTHON_PIP: "python3-pip"
+      - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+        PYTHON: "python3.4"
+        PYTHON_PIP: "python3-pip"
       - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
         PYTHON: "C:\\Python27"
       - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
