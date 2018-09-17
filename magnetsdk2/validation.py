@@ -5,7 +5,7 @@ This module implements basic validation and conversion logic for API data.
 import datetime
 from collections import Iterable
 from uuid import UUID
-from time import UTC
+from magnetsdk2.time import UTC
 
 import iso8601
 import validators
