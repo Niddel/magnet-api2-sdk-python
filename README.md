@@ -153,7 +153,7 @@ optional arguments:
                         file to store persistent state data, to ensure only
                         alerts that haven't been seen before are part of the
                         output
-  -f {json,cef}, --format {json,cef}
+  -f {json,cef}, --format {json,cef,csv}
                         format in which to output alerts
 ```
 

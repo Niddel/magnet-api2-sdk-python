@@ -73,7 +73,7 @@ def timestamp(ts):
     return '{0:d}'.format(trunc(seconds_from_UTC_epoch(ts) * 1000))
 
 
-def convert_alert(obj, alert, organization):
+def convert_alert_cef(obj, alert, organization):
     """
     Converts a Niddel Magnet v2 API alert into an approximate CEF version 0 representation.
     :param obj: file-like object in binary mode to write to

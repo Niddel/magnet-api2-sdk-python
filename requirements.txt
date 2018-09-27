@@ -1,6 +1,7 @@
 pylint
 cheesecake
 pypandoc
+unicodecsv
 requests>=2.12.5,<3
 six>=1.10,<2
 iso8601>=0.1.12,<1

@@ -21,7 +21,8 @@ import boto3
 import six
 
 from magnetsdk2 import Connection, __version__
-from magnetsdk2.cef import convert_alert
+from magnetsdk2.cef import convert_alert_cef
+from magnetsdk2.csv import convert_alert_csv, csv_header
 from magnetsdk2.iterator import FilePersistentAlertIterator
 from magnetsdk2.time import UTC
 from magnetsdk2.validation import parse_date
@@ -33,7 +34,6 @@ handler.setFormatter(
     logging.Formatter('%(asctime)s pid=%(process)d %(module)s %(levelname)s %(message)s',
                       '%Y-%m-%dT%H:%M:%S%z'))
 logger.addHandler(handler)
-
 
 def main():
     # top-level parser
@@ -82,8 +82,9 @@ def main():
     alerts_parser.add_argument("-c", "--cursor",
                                help="latest cursor representing the starting point to request " +
                                     "data to the streaming API")
-    alerts_parser.add_argument("-f", "--format", choices=['json', 'cef'], default='json',
-                               help="format in which to output alerts")
+    alerts_parser.add_argument("-f", "--format", choices=['json', 'cef', 'csv'], default='json',
+                               help="format in which to output alerts, for 'csv' option the header " +
+                               " will be printed only once.")
     alerts_parser.set_defaults(func=command_alerts, start=None, persist=None, parser=alerts_parser)
 
     # "whitelists" and "blacklists" commands
@@ -109,7 +110,8 @@ def main():
                                                     "S3 bucket's upload folder")
     logs_parser.add_argument("organization",
                              help="ID of the organization, if omitted the API key owner's " +
-                                  "default organization is used",
+                                  "default organization is used. This argument is required " +
+                                  "when used with 'upload'.",
                              type=UUID, nargs='?')
     logs_parser.set_defaults(parser=logs_parser)
 
@@ -224,12 +226,17 @@ def command_alerts(conn, args):
     if args.outfile != stdout and args.format == 'cef':
         args.outfile.write(BOM_UTF8)
 
+    print_header = True # Ensure header printing runs only once
     for alert in iterator:
         try:
             if args.format == 'json':
                 json.dump(alert, args.outfile, indent=args.indent)
             elif args.format == 'cef':
-                convert_alert(args.outfile, alert, args.organization)
+                convert_alert_cef(args.outfile, alert, args.organization)
+            elif args.format == 'csv':
+                csv_header(args.outfile, print_header)
+                print_header = False
+                convert_alert_csv(args.outfile, alert, args.organization)
             args.outfile.write(linesep)
         except IOError as ioe:
             if ioe.errno == EPIPE and args.outfile == stdout:
