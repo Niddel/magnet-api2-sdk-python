@@ -1,3 +1,7 @@
+1.6.3
+======
+* Implements support to alert export in CSV format
+
 1.6.2
 ======
 * HTTP header 'User-Agent' defined to provide running versions information.
