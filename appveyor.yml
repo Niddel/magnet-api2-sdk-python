@@ -2,6 +2,14 @@ environment:
   matrix:
       - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
         PYTHON: "python2.7"
+        PYTHON_VERSION: "2.7.5"
+        PYTHON_PIP: "python-pip"
+      - APPVEYOR_BUILD_WORKER_IMAGE: Centos
+        PYTHON: "python2.7"
+        PYTHON_VERSION: "2.7.5"
+        PYTHON_PIP: "python-pip"
+      - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+        PYTHON: "python2.7"
         PYTHON_PIP: "python-pip"
       - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
         PYTHON: "python3"
