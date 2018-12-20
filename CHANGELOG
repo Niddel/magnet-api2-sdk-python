@@ -1,3 +1,7 @@
+1.6.4
+======
+* Updates python package urllib3 (1.24.1) and requests (2.21.0)
+
 1.6.3
 ======
 * Implements support to alert export in CSV format
