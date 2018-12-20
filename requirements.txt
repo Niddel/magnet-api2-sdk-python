@@ -2,10 +2,11 @@ pylint
 cheesecake
 pypandoc
 unicodecsv
-requests>=2.12.5,<3
+requests>=2.21.0,<3
 six>=1.10,<2
 iso8601>=0.1.12,<1
 validators>=0.12.0,<1
 boto3>=1.4.5,<2
 pytest>=3.3,<4
 pytest-runner>=3,<4
+urllib3>=1.24.1
