@@ -66,6 +66,16 @@ def main():
                             type=UUID, required=False)
     org_parser.set_defaults(func=command_organizations, id=None, parser=org_parser)
 
+    # "topology" command
+    topology_parser = subparsers.add_parser('topology',
+                                       help="list basic network topology information",
+                                       description="list basic network topology information")
+    topology_parser.add_argument("organization_id",
+                               help="ID of the organization, if omitted the API key owner's " +
+                                    "default organization is used",
+                               nargs='?', type=UUID)
+    topology_parser.set_defaults(func=command_topology, organization_id=None, parser=topology_parser)
+
     # "alerts" command
     alerts_parser = subparsers.add_parser('alerts',
                                           help="list an organization's alerts",
@@ -209,6 +219,12 @@ def command_organizations(conn, args):
                 else:
                     six.reraise(*exc_info())
 
+def command_topology(conn, args):
+    if args.organization_id:
+        for topology in conn.get_organization_topology(args.organization_id):
+            json.dump(topology, args.outfile, indent=args.indent)
+    else:
+        raise Exception('Please provide an organization ID.')
 
 def command_alerts(conn, args):
     if not args.organization:
