@@ -240,6 +240,23 @@ class Connection(object):
         else:
             response.raise_for_status()
 
+    def get_organization_topology(self, organization_id):
+        """Retrieves detailed data from the organization topology this API key has accessed to based on its
+        ID.
+        :param organization_id: string with the UUID-style unique ID of the organization
+        :return: decoded JSON objects that represents the organization topology or None if not found
+        """
+        if not is_valid_uuid(organization_id):
+            raise ValueError("organization id should be a string in UUID format")
+        response = self._request_retry("GET", path='organizations/%s/settings' % organization_id)
+        if response.status_code == 200:
+            yield response.json()
+            return
+        elif response.status_code == 404:
+            return
+        else:
+            response.raise_for_status()
+
     def get_organization_credentials(self, organization_id, cache=True):
         """ Retrieves a new set of temporary AWS credentials to allow access to an organization's
         S3 bucket. Typically used to upload log files. Will cache the response and return the same
