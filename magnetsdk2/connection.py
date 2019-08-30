@@ -21,12 +21,12 @@ from magnetsdk2.validation import is_valid_uuid, is_valid_uri, is_valid_port, \
 # Default values used for the configuration
 _CONFIG_DIR = os.path.expanduser('~/.magnetsdk')
 _CONFIG_FILE = os.path.join(_CONFIG_DIR, "config")
-_DEFAULT_CONFIG = {'endpoint': 'https://api.niddel.com/v2'}
+_DEFAULT_CONFIG = {'endpoint': 'https://api.[region].niddel.com/v2'}
 _API_KEY_HEADER = 'X-Api-Key'
 _PAGE_SIZE = 100
 
 class Connection(object):
-    """ This class encapsulates accessing the Niddel Magnet v2 API (https://api.niddel.com/v2)
+    """ This class encapsulates accessing the Niddel Magnet v2 API (https://api.[region].niddel.com/v2)
      using a particular configuration profile from ~/.magnetsdk/config, and is wrapper around
      the requests library that is used for all accesses.
     """
@@ -160,7 +160,7 @@ class Connection(object):
         """
         pass
 
-    def _request(self, method, path, params=None, body=None):
+    def _request(self, method, path, params=None, body=None, region=None):
         """ Performs an HTTP operation using the base API endpoint, API key and SSL validation /
         cert pinning obtained from the configuration file.
         :param method: string with the the HTTP method to use ('GET', 'PUT', etc.)
@@ -168,7 +168,14 @@ class Connection(object):
         :param params: dict with the query parameters to submit
         :return: the requests.Response object
         """
-        response = request(method=method, url=self.endpoint + path, params=params, json=body,
+        endpoint=""
+
+        if region:
+            endpoint = self.endpoint.replace("[region]", region)
+        else:
+            endpoint = self.endpoint.replace("[region]", "global")
+
+        response = request(method=method, url=endpoint + path, params=params, json=body,
                            verify=self.verify,
                            proxies=self._proxies, timeout=(5, 60),
                            headers={_API_KEY_HEADER: self.api_key,
@@ -185,13 +192,13 @@ class Connection(object):
         self._logger.debug("got {0:d} response".format(response.status_code))
         return response
 
-    def _request_retry(self, method, path, params=None, body=None, ok_status=(200, 404), retries=5):
+    def _request_retry(self, method, path, params=None, body=None, ok_status=(200, 404), retries=5, region=None):
         """ Wrapper around self._request that retries on exceptions and unexpected status codes.
         """
         i = 1
         while True:
             try:
-                response = self._request(method, path, params, body)
+                response = self._request(method, path, params, body, region)
                 if i >= retries or response.status_code in ok_status:
                     return response
             except:
@@ -230,9 +237,13 @@ class Connection(object):
         :param organization_id: string with the UUID-style unique ID of the organization
         :return: decoded JSON objects that represents the organization or None if not found
         """
+        region=None
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
-        response = self._request_retry("GET", path='organizations/%s' % organization_id)
+        for org in self.iter_organizations():
+                if organization_id == org['id']:
+                    region = org['region']
+        response = self._request_retry("GET", path='organizations/%s' % organization_id,region=region)
         if response.status_code == 200:
             return response.json()
         elif response.status_code == 404:
@@ -246,9 +257,13 @@ class Connection(object):
         :param organization_id: string with the UUID-style unique ID of the organization
         :return: decoded JSON objects that represents the organization topology or None if not found
         """
+        region=None
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
-        response = self._request_retry("GET", path='organizations/%s/settings' % organization_id)
+        for org in self.iter_organizations():
+                if organization_id == org['id']:
+                    region = org['region']
+        response = self._request_retry("GET", path='organizations/%s/settings' % organization_id,region=region)
         if response.status_code == 200:
             yield response.json()
             return
@@ -265,8 +280,12 @@ class Connection(object):
         :param cache: boolean controlling whether credentials are cached in this connection
         :return: decoded JSON objects that represents the credentials
         """
+        region=None
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
+        for org in self.iter_organizations():
+                if organization_id == org['id']:
+                    region = org['region']
 
         # try cached response first, must have at least 10 minutes validity
         if cache:
@@ -279,7 +298,7 @@ class Connection(object):
                     del self._org_creds_cache[organization_id]
 
         # get a new credential
-        response = self._request_retry("GET", path='organizations/%s/credentials' % organization_id)
+        response = self._request_retry("GET", path='organizations/%s/credentials' % organization_id,region=region)
         if response.status_code == 200:
             cached_response = response.json()
             if cache:
@@ -300,8 +319,12 @@ class Connection(object):
         'rejected', 'resolved'
         :return: an iterator over the decoded JSON objects that represent alerts.
         """
+        region=None
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
+        for org in self.iter_organizations():
+                if organization_id == org['id']:
+                    region = org['region']
         if not is_valid_alert_sortBy(sortBy):
             raise ValueError("sortBy must be either 'logDate' or 'batchDate'")
         if status is not None and not is_valid_alert_status(status):
@@ -324,7 +347,7 @@ class Connection(object):
 
         while True:
             response = self._request_retry("GET", path='organizations/%s/alerts' % organization_id,
-                                           params=params)
+                                           params=params,region=region)
             if response.status_code == 200:
                 alert_list = response.json()
                 for alert in alert_list:
@@ -395,14 +418,18 @@ class Connection(object):
         :param sortBy: one of 'logDate' or 'batchDate', controls which date field to return
         :return: a set of ISO 8601 dates for which alerts exist
         """
+        region=None
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
+        for org in self.iter_organizations():
+                if organization_id == org['id']:
+                    region = org['region']
         if not is_valid_alert_sortBy(sortBy):
             raise ValueError("sortBy must be either 'logDate' or 'batchDate'")
 
         response = self._request_retry("GET",
                                        path='organizations/%s/alerts/dates' % organization_id,
-                                       params={'sortBy': sortBy})
+                                       params={'sortBy': sortBy},region=region)
         if response.status_code == 200:
             return set(response.json())
         elif response.status_code == 404:
@@ -423,11 +450,15 @@ class Connection(object):
     def _list_organization_wblists(self, scope, organization_id):
         if not scope in ('white', 'black',):
             raise ValueError('scope should be either white or black')
+        region=None
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
+        for org in self.iter_organizations():
+                if organization_id == org['id']:
+                    region = org['region']
 
         path = 'organizations/%s/%slists' % (organization_id, scope)
-        response = self._request_retry("GET", path=path)
+        response = self._request_retry("GET", path=path,region=region)
         if response.status_code == 200:
             return response.json()
         elif response.status_code == 404:
@@ -454,13 +485,15 @@ class Connection(object):
     def _get_organization_wblist_entry(self, scope, organization_id, id):
         if not scope in ('white', 'black',):
             raise ValueError('scope should be either white or black')
+        region=None
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
-        if not is_valid_uuid(organization_id):
-            raise ValueError("id should be a string in UUID format")
+        for org in self.iter_organizations():
+                if organization_id == org['id']:
+                    region = org['region']
 
         path = 'organizations/%s/%slists/%s' % (organization_id, scope, id)
-        response = self._request_retry("GET", path=path)
+        response = self._request_retry("GET", path=path,region=region)
         if response.status_code == 200:
             return response.json()
         else:
