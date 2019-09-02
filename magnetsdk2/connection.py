@@ -367,15 +367,15 @@ class Connection(object):
             if response.status_code == 200:
                 alert_response = response.json()
 
-                if not alert_response.has_key('paging'):
+                if 'paging' not in alert_response:
                     return
 
-                if not alert_response['paging'].has_key('cursor'):
+                if 'cursor' not in alert_response['paging']:
                     return
                 
                 params['cursor'] = alert_response['paging']['cursor']
 
-                if params.has_key('batchDate'):
+                if 'batchDate' in params:
                     del params['batchDate']
 
                 for alert in alert_response['data']:
