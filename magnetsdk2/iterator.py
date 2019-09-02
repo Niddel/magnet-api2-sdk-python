@@ -238,10 +238,10 @@ class FilePersistentAlertIterator(AbstractPersistentAlertIterator):
         if isfile(self._filename):
             with open(self._filename, 'r') as f:
                 pe = json.load(f)
-                if 'latest_batch_date' in pe:
+                if hasattr(pe, 'latest_batch_date'):
                     return PersistenceEntry(pe['organization_id'], pe['latest_batch_date'],
                                         pe['latest_alert_ids'], None)
-                if 'latest_api_cursor' in pe:
+                if hasattr(pe, 'latest_api_cursor'):
                     return PersistenceEntry(pe['organization_id'], None,
                                         pe['latest_alert_ids'], pe['latest_api_cursor'])
         else:
