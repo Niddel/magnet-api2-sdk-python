@@ -1,3 +1,13 @@
+1.6.6
+======
+* Fix attribute "has_key" not found error in python 3
+* Complement to setup.py to install required dependencies
+* Update multiregion endpoint selection
+
+1.6.5
+======
+* Implement Network Topology Command
+
 1.6.4
 ======
 * Updates python package urllib3 (1.24.1) and requests (2.21.0)
