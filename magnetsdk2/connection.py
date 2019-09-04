@@ -370,8 +370,12 @@ class Connection(object):
         :param persistence: boolean indicating if the alerts will be persisted. If so, the API cursor should be returned
         :return: an iterator over the decoded JSON objects that represent alerts.
         """
+        region=None
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
+        for org in self.iter_organizations():
+                if organization_id == org['id']:
+                    region = org['region']
     
         # loop over alert pages and yield them
         params = {}
@@ -385,7 +389,7 @@ class Connection(object):
         while True:
             response = self._request_retry("GET", 
                                         path='organizations/%s/alerts/stream' % organization_id,
-                                        params=params)
+                                        params=params,region=region)
             
             if response.status_code == 200:
                 alert_response = response.json()
