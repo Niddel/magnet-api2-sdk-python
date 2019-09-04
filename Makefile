@@ -10,8 +10,8 @@ README.rst: README.md
 
 pypi: README.rst
 	python setup.py clean
-	python setup.py sdist upload -r pypi
+	twine upload --repository pypi dist/*
 
 pypitest: README.rst
 	python setup.py clean
-	python setup.py sdist upload -r pypitest
+	twine upload --repository pypitest dist/*
