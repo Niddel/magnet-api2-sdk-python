@@ -241,8 +241,8 @@ class Connection(object):
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
         for org in self.iter_organizations():
-                if organization_id == org['id']:
-                    region = org['region']
+            if str(organization_id) == org['id']:
+                region = org['region']
         response = self._request_retry("GET", path='organizations/%s' % organization_id,region=region)
         if response.status_code == 200:
             return response.json()
@@ -261,8 +261,8 @@ class Connection(object):
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
         for org in self.iter_organizations():
-                if organization_id == org['id']:
-                    region = org['region']
+            if str(organization_id) == org['id']:
+                region = org['region']
         response = self._request_retry("GET", path='organizations/%s/settings' % organization_id,region=region)
         if response.status_code == 200:
             yield response.json()
@@ -284,8 +284,8 @@ class Connection(object):
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
         for org in self.iter_organizations():
-                if organization_id == org['id']:
-                    region = org['region']
+            if str(organization_id) == org['id']:
+                region = org['region']
 
         # try cached response first, must have at least 10 minutes validity
         if cache:
@@ -323,8 +323,8 @@ class Connection(object):
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
         for org in self.iter_organizations():
-                if organization_id == org['id']:
-                    region = org['region']
+            if str(organization_id) == org['id']:
+                region = org['region']
         if not is_valid_alert_sortBy(sortBy):
             raise ValueError("sortBy must be either 'logDate' or 'batchDate'")
         if status is not None and not is_valid_alert_status(status):
@@ -374,8 +374,8 @@ class Connection(object):
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
         for org in self.iter_organizations():
-                if organization_id == org['id']:
-                    region = org['region']
+            if str(organization_id) == org['id']:
+                region = org['region']
     
         # loop over alert pages and yield them
         params = {}
@@ -387,6 +387,7 @@ class Connection(object):
             params['batchDate'] = parse_date(latest_batch_date)
 
         while True:
+            
             response = self._request_retry("GET", 
                                         path='organizations/%s/alerts/stream' % organization_id,
                                         params=params,region=region)
@@ -426,8 +427,8 @@ class Connection(object):
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
         for org in self.iter_organizations():
-                if organization_id == org['id']:
-                    region = org['region']
+            if str(organization_id) == org['id']:
+                region = org['region']
         if not is_valid_alert_sortBy(sortBy):
             raise ValueError("sortBy must be either 'logDate' or 'batchDate'")
 
@@ -458,8 +459,8 @@ class Connection(object):
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
         for org in self.iter_organizations():
-                if organization_id == org['id']:
-                    region = org['region']
+            if str(organization_id) == org['id']:
+                region = org['region']
 
         path = 'organizations/%s/%slists' % (organization_id, scope)
         response = self._request_retry("GET", path=path,region=region)
@@ -493,8 +494,8 @@ class Connection(object):
         if not is_valid_uuid(organization_id):
             raise ValueError("organization id should be a string in UUID format")
         for org in self.iter_organizations():
-                if organization_id == org['id']:
-                    region = org['region']
+            if str(organization_id) == org['id']:
+                region = org['region']
 
         path = 'organizations/%s/%slists/%s' % (organization_id, scope, id)
         response = self._request_retry("GET", path=path,region=region)
